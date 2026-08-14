@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Deep Sea Trench Lander — Mariana Trench Submersible Hull Monitor</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<a class="skip-link" href="#main">Skip to main content</a>
+
+<header class="topbar">
+  <div class="brand">
+    <span class="mark" aria-hidden="true"></span>
+    <div>
+      DEEP SEA TRENCH LANDER
+      <small>MARIANA TRENCH SUBMERSIBLE HULL MONITOR</small>
+    </div>
+  </div>
+  <div class="topbar-right">
+    <div class="conn-status">
+      <span class="dot" aria-hidden="true"></span>
+      <span id="link-status">Telemetry link stable</span>
+    </div>
+    <div class="a11y-controls" role="group" aria-label="Display settings">
+      <button class="icon-btn" id="contrastToggle" aria-pressed="false" title="Toggle high contrast">AA Contrast</button>
+      <button class="icon-btn" id="textSmaller" aria-label="Decrease text size">A-</button>
+      <button class="icon-btn" id="textLarger" aria-label="Increase text size">A+</button>
+    </div>
+  </div>
+</header>
+
+<nav class="page-nav" aria-label="Exhibit sections">
+  <button class="nav-btn" data-page="overview" type="button">Overview</button>
+  <button class="nav-btn" data-page="hull" type="button">Hull sensors</button>
+  <button class="nav-btn" data-page="sonar" type="button">Sonar</button>
+  <button class="nav-btn" data-page="analytics" type="button">Analytics</button>
+  <button class="nav-btn" data-page="control" type="button">Mission log</button>
+  <button class="nav-btn" data-page="a11y" type="button">Accessibility</button>
+</nav>
+
+<main id="main">
+
+  <section class="page" id="page-overview" aria-labelledby="overview-heading">
+  <section class="hero">
+    <div class="depth-column-wrap">
+      <h2>Live depth position</h2>
+      <div class="depth-track" id="depthTrack" role="img" aria-label="Vertical cross-section of the ocean showing the lander's current depth">
+        <div class="zone-band" style="top:0%;"><span>Sunlight — 0m</span></div>
+        <div class="zone-band" style="top:1.8%;"><span>Twilight — 200m</span></div>
+        <div class="zone-band" style="top:9.1%;"><span>Midnight — 1,000m</span></div>
+        <div class="zone-band" style="top:36.6%;"><span>Abyssal — 4,000m</span></div>
+        <div class="zone-band" style="top:54.9%;"><span>Hadal — 6,000m</span></div>
+        <div class="zone-band" style="top:100%; border-top:1px solid var(--teal);"><span style="color:#00e6c1; background:rgba(0,0,0,0.5);">Challenger Deep — 10,935m</span></div>
+        <div class="lander-pulse" id="landerPulse" style="top:0%;"></div>
+        <div class="lander-marker" id="landerMarker" style="top:0%;" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none">
+            <ellipse cx="12" cy="12" rx="10" ry="6" fill="#00e6c1"/>
+            <circle cx="12" cy="12" r="3" fill="#03070c"/>
+          </svg>
+        </div>
+      </div>
+      <div class="depth-scale-caption"><span>0 m</span><span>10,935 m</span></div>
+    </div>
+
+    <div class="hero-main">
+      <div>
+        <p class="eyebrow">Exhibit 04 — Hadal zone descent simulator</p>
+        <h1 id="overview-heading" tabindex="-1">Ride the hull monitor to the bottom of the world.</h1>
+        <p class="hero-desc">This console mirrors the instrumentation carried by a real trench-class submersible: live depth, ambient pressure, and hull-stress telemetry, updated as the lander descends toward Challenger Deep, 10,935 metres down.</p>
+      </div>
+
+      <div class="hud-grid" aria-live="polite">
+        <div class="hud-cell"><p class="label">Depth</p><p class="value" id="hudDepth">0<span class="unit">m</span></p></div>
+        <div class="hud-cell"><p class="label">Ext. pressure</p><p class="value" id="hudPressure">1.0<span class="unit">bar</span></p></div>
+        <div class="hud-cell" id="hullCell"><p class="label">Hull stress</p><p class="value" id="hudHull">2<span class="unit">%</span></p></div>
+        <div class="hud-cell"><p class="label">Ext. temp</p><p class="value" id="hudTemp">18.4<span class="unit">°C</span></p></div>
+        <div class="hud-cell" id="o2Cell"><p class="label">Life support O2</p><p class="value" id="hudO2">98<span class="unit">%</span></p></div>
+        <div class="hud-cell" id="battCell"><p class="label">Battery</p><p class="value" id="hudBatt">100<span class="unit">%</span></p></div>
+      </div>
+
+      <div class="mode-row">
+        <span class="mode-pill" id="pillDive">Diving</span>
+        <span class="mode-pill" id="pillHold">Holding</span>
+        <span class="mode-pill" id="pillAscend">Ascending</span>
+        <span class="mode-pill" id="pillDocked">Docked</span>
+      </div>
+
+      <div class="btn-row">
+        <button class="kiosk-btn primary" id="btnDive">Begin descent</button>
+        <button class="kiosk-btn" id="btnHold">Hold position</button>
+        <button class="kiosk-btn" id="btnAscend">Ascend</button>
+        <button class="kiosk-btn danger" id="btnReset">Reset to surface</button>
+      </div>
+    </div>
+  </section>
+  </section>
+
+  <section class="page" id="page-hull" aria-labelledby="hull-heading">
+  <section class="block" aria-labelledby="hull-heading">
+    <div class="block-head">
+      <p class="eyebrow">Part C — sensor array</p>
+      <h2 id="hull-heading" tabindex="-1">Hull integrity monitoring</h2>
+      <p>Strain gauges, acoustic-emission listeners, and a LiDAR scan head report structural load in real time as depth — and pressure — increase.</p>
+    </div>
+    <div class="sensor-grid" id="sensorGrid" aria-live="polite">
+      <div class="sensor-card" data-sensor="bow">
+        <div class="top"><div><h3>Bow strain gauge</h3><p class="zone-tag">Forward hull, ring 1</p></div><span class="status-chip nominal" data-chip>Nominal</span></div>
+        <p class="sensor-reading" data-reading>0.02<span class="u">mm/mm microstrain</span></p>
+        <div class="meter"><i data-meter style="width:2%"></i></div>
+      </div>
+      <div class="sensor-card" data-sensor="stern">
+        <div class="top"><div><h3>Stern strain gauge</h3><p class="zone-tag">Aft hull, ring 4</p></div><span class="status-chip nominal" data-chip>Nominal</span></div>
+        <p class="sensor-reading" data-reading>0.02<span class="u">mm/mm microstrain</span></p>
+        <div class="meter"><i data-meter style="width:2%"></i></div>
+      </div>
+      <div class="sensor-card" data-sensor="dome">
+        <div class="top"><div><h3>Viewport dome</h3><p class="zone-tag">Acrylic pressure hull</p></div><span class="status-chip nominal" data-chip>Nominal</span></div>
+        <p class="sensor-reading" data-reading>0.03<span class="u">mm/mm microstrain</span></p>
+        <div class="meter"><i data-meter style="width:3%"></i></div>
+      </div>
+      <div class="sensor-card" data-sensor="acoustic">
+        <div class="top"><div><h3>Acoustic emission</h3><p class="zone-tag">Titanium sphere seam</p></div><span class="status-chip nominal" data-chip>Nominal</span></div>
+        <p class="sensor-reading" data-reading>4<span class="u">events / min</span></p>
+        <div class="meter"><i data-meter style="width:4%"></i></div>
+      </div>
+      <div class="sensor-card" data-sensor="lidar">
+        <div class="top"><div><h3>LiDAR hull scan</h3><p class="zone-tag">Exterior surface pass</p></div><span class="status-chip nominal" data-chip>Nominal</span></div>
+        <p class="sensor-reading" data-reading>0<span class="u">deviations flagged</span></p>
+        <div class="meter"><i data-meter style="width:1%"></i></div>
+      </div>
+      <div class="sensor-card" data-sensor="thermal">
+        <div class="top"><div><h3>Thermal differential</h3><p class="zone-tag">Hull skin vs. cabin</p></div><span class="status-chip nominal" data-chip>Nominal</span></div>
+        <p class="sensor-reading" data-reading>3.2<span class="u">°C differential</span></p>
+        <div class="meter"><i data-meter style="width:8%"></i></div>
+      </div>
+    </div>
+  </section>
+  </section>
+
+  <section class="page" id="page-sonar" aria-labelledby="sonar-heading">
+  <section class="block" aria-labelledby="sonar-heading">
+    <div class="block-head">
+      <p class="eyebrow">Exterior awareness</p>
+      <h2 id="sonar-heading" tabindex="-1">Sonar &amp; exterior scan</h2>
+      <p>A 360° sweep tracks the trench floor and any nearby contacts as the lander descends through open water.</p>
+    </div>
+    <div class="sonar-wrap">
+      <div class="sonar-scope" id="sonarScope" role="img" aria-label="Rotating sonar sweep with occasional contact blips">
+        <div class="sonar-ring" style="inset:8%;"></div>
+        <div class="sonar-ring" style="inset:26%;"></div>
+        <div class="sonar-ring" style="inset:44%;"></div>
+        <div class="sonar-crosshair"></div>
+        <div class="sonar-sweep"></div>
+      </div>
+      <div class="sonar-readout">
+        <dl>
+          <dt>Contacts tracked</dt><dd id="sonarContacts">0</dd>
+          <dt>Trench floor range</dt><dd id="sonarRange">—</dd>
+          <dt>Sweep rate</dt><dd>80 rpm</dd>
+          <dt>Array status</dt><dd id="sonarStatus">Online</dd>
+        </dl>
+        <div class="contact-log">
+          <h4>Contact log</h4>
+          <ul id="contactLog">
+            <li><span class="t">00:00:00</span> Array initialised, no contacts.</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+  </section>
+
+  <section class="page" id="page-analytics" aria-labelledby="analytics-heading">
+  <section class="block" aria-labelledby="analytics-heading">
+    <div class="block-head">
+      <p class="eyebrow">Telemetry analytics</p>
+      <h2 id="analytics-heading" tabindex="-1">Pressure &amp; hull-stress history</h2>
+      <p>Live simulated trends update during descent so the operator can see how structural load changes with depth.</p>
+    </div>
+    <div class="control-wrap">
+      <div class="a11y-item">
+        <h3>Pressure vs. depth</h3>
+        <canvas id="pressureChart" height="240" aria-label="Pressure versus depth chart"></canvas>
+      </div>
+      <div class="a11y-item">
+        <h3>Hull stress vs. depth</h3>
+        <canvas id="stressChart" height="240" aria-label="Hull stress versus depth chart"></canvas>
+      </div>
+    </div>
+  </section>
+  </section>
+
+  <section class="page" id="page-control" aria-labelledby="control-heading">
+  <section class="block" aria-labelledby="control-heading">
+    <div class="block-head">
+      <p class="eyebrow">Mission control</p>
+      <h2 id="control-heading" tabindex="-1">System log &amp; commands</h2>
+      <p>Every command and depth milestone is recorded to the mission log below.</p>
+    </div>
+    <div class="control-wrap">
+      <div class="terminal" id="terminal" tabindex="0" aria-label="Mission log">
+        <p class="ok"><span class="ts">00:00:00</span> System check complete. All systems nominal.</p>
+        <p><span class="ts">00:00:01</span> Lander docked at surface platform.</p>
+      </div>
+      <div class="control-actions">
+        <div class="a11y-item">
+          <h3>How to use this console</h3>
+          <p>Press <strong>Begin descent</strong> to start the dive. <strong>Hold position</strong> freezes depth for closer sensor inspection. <strong>Ascend</strong> reverses the dive. <strong>Reset to surface</strong> returns the lander to 0 m.</p>
+        </div>
+        <div class="btn-row">
+          <button class="kiosk-btn primary" id="btnDive2">Begin descent</button>
+          <button class="kiosk-btn" id="btnHold2">Hold position</button>
+          <button class="kiosk-btn" id="btnAscend2">Ascend</button>
+        </div>
+        <p class="control-note">Simulated telemetry for exhibit purposes — figures follow real pressure and temperature curves for the Mariana Trench.</p>
+      </div>
+    </div>
+  </section>
+  </section>
+
+  <section class="page" id="page-a11y" aria-labelledby="a11y-heading">
+  <section class="block" aria-labelledby="a11y-heading">
+    <div class="block-head">
+      <p class="eyebrow">Part A — accessibility</p>
+      <h2 id="a11y-heading" tabindex="-1">Built for every visitor</h2>
+      <p>This kiosk is designed to ADA standards for public interactive exhibits.</p>
+    </div>
+    <div class="a11y-panel">
+      <div class="a11y-item"><h3><span class="tick">✓</span>Touch height</h3><p>Primary controls sit within 380–1220 mm reach range and all touch targets measure at least 44×44 px.</p></div>
+      <div class="a11y-item"><h3><span class="tick">✓</span>High contrast mode</h3><p>Toggle in the top bar swaps the palette for a black-and-white, AAA-contrast theme.</p></div>
+      <div class="a11y-item"><h3><span class="tick">✓</span>Adjustable text size</h3><p>A- and A+ controls scale all kiosk text without breaking layout.</p></div>
+      <div class="a11y-item"><h3><span class="tick">✓</span>Reduced motion aware</h3><p>Sweep, pulse, and marker animations respect the visitor's system motion preference.</p></div>
+      <div class="a11y-item"><h3><span class="tick">✓</span>Screen reader labelling</h3><p>Live telemetry regions and diagrams carry descriptive labels and polite live-region updates.</p></div>
+      <div class="a11y-item"><h3><span class="tick">✓</span>Keyboard operable</h3><p>Every control is reachable and operable by keyboard, with a visible focus ring throughout.</p></div>
+    </div>
+  </section>
+  </section>
+
+
+  <div class="emergency-overlay" id="emergencyOverlay" aria-hidden="true">
+    <div class="emergency-modal" role="alertdialog" aria-modal="true" aria-labelledby="emergencyTitle">
+      <div class="emergency-icon">!</div>
+      <p class="eyebrow">CRITICAL HULL ALERT</p>
+      <h2 id="emergencyTitle">Structural stress threshold exceeded</h2>
+      <p id="emergencyMessage">Hull stress has reached a critical level. Ascend immediately and inspect the hull.</p>
+      <div class="emergency-stats">
+        <div><span>Hull stress</span><strong id="criticalStress">86%</strong></div>
+        <div><span>Depth</span><strong id="criticalDepth">9,500 m</strong></div>
+        <div><span>Pressure</span><strong id="criticalPressure">951 bar</strong></div>
+      </div>
+      <div class="btn-row">
+        <button class="kiosk-btn danger" id="emergencyAscend">INITIATE ASCENT</button>
+        <button class="kiosk-btn" id="emergencyClose">ACKNOWLEDGE</button>
+      </div>
+    </div>
+  </div>
+
+</main>
+
+<footer>
+  <div class="fbrand">Ocean Frontiers Gallery — Deep Sea Trench Lander Exhibit</div>
+  <div class="fmeta">Exhibit 04 · Hull monitor build v1.0 · For museum kiosk display</div>
+</footer>
+
+<script src="js/sensors.js"></script>
+<script src="js/sonar.js"></script>
+<script src="js/analytics.js"></script>
+<script src="js/accessibility.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>
