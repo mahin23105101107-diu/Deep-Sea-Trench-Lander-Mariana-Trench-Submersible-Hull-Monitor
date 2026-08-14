@@ -1,0 +1,1102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Deep Sea Trench Lander — Mariana Trench Submersible Hull Monitor</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --abyss:#03070c;
+    --deep:#081019;
+    --panel:#0d1822;
+    --panel-raised:#111f2b;
+    --line: rgba(201,212,218,0.10);
+    --line-strong: rgba(201,212,218,0.20);
+    --teal:#00e6c1;
+    --teal-dim: rgba(0,230,193,0.14);
+    --amber:#ffb238;
+    --amber-dim: rgba(255,178,56,0.14);
+    --red:#ff4a52;
+    --red-dim: rgba(255,74,82,0.14);
+    --steel:#c9d4da;
+    --steel-mute:#6f818c;
+    --steel-faint:#3c4a54;
+    --font-display:'Space Grotesk', sans-serif;
+    --font-mono:'JetBrains Mono', monospace;
+    --font-body:'Inter', sans-serif;
+    --radius: 3px;
+    --fs-scale: 1;
+  }
+  *{box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{
+    margin:0;
+    background:var(--abyss);
+    color:var(--steel);
+    font-family:var(--font-body);
+    font-size:calc(16px * var(--fs-scale));
+    line-height:1.5;
+    -webkit-font-smoothing:antialiased;
+  }
+  body.contrast{
+    --abyss:#000000;
+    --deep:#000000;
+    --panel:#050505;
+    --panel-raised:#0a0a0a;
+    --line: rgba(255,255,255,0.35);
+    --line-strong: rgba(255,255,255,0.55);
+    --teal:#00ffd6;
+    --amber:#ffcc00;
+    --red:#ff3b3b;
+    --steel:#ffffff;
+    --steel-mute:#e6e6e6;
+    --steel-faint:#9a9a9a;
+  }
+  a{color:var(--teal);}
+  img,svg{display:block;}
+  button{font-family:inherit;}
+
+  ::selection{ background:var(--teal); color:var(--abyss); }
+
+  .visually-hidden{
+    position:absolute; width:1px; height:1px; padding:0; margin:-1px;
+    overflow:hidden; clip:rect(0,0,0,0); white-space:nowrap; border:0;
+  }
+
+  .skip-link{
+    position:absolute; top:-100px; left:12px; background:var(--teal); color:var(--abyss);
+    padding:10px 16px; z-index:1000; font-weight:600; border-radius:var(--radius);
+    transition:top .15s ease;
+  }
+  .skip-link:focus{ top:12px; }
+
+  a:focus-visible, button:focus-visible, [tabindex]:focus-visible{
+    outline:2px solid var(--teal); outline-offset:3px;
+  }
+
+  /* ===== Top bar ===== */
+  .topbar{
+    position:sticky; top:0; z-index:50;
+    display:flex; align-items:center; justify-content:space-between;
+    gap:16px; padding:14px 24px;
+    background:rgba(3,7,12,0.88); backdrop-filter:blur(10px);
+    border-bottom:1px solid var(--line);
+    flex-wrap:wrap;
+  }
+  .brand{
+    display:flex; align-items:center; gap:10px;
+    font-family:var(--font-display); font-weight:600; letter-spacing:0.02em;
+    font-size:0.95rem; color:var(--steel);
+    text-transform:uppercase;
+  }
+  .brand .mark{
+    width:10px; height:10px; border-radius:50%; background:var(--teal);
+    box-shadow:0 0 0 3px var(--teal-dim);
+    flex:none;
+  }
+  .brand small{ display:block; font-family:var(--font-mono); font-weight:400; letter-spacing:0.06em; color:var(--steel-mute); font-size:0.65rem; text-transform:none; margin-top:2px;}
+
+  .topbar-right{ display:flex; align-items:center; gap:10px; flex-wrap:wrap; }
+  .conn-status{
+    display:flex; align-items:center; gap:8px;
+    font-family:var(--font-mono); font-size:0.72rem; letter-spacing:0.04em;
+    color:var(--steel-mute); text-transform:uppercase;
+    padding:6px 10px; border:1px solid var(--line); border-radius:var(--radius);
+  }
+  .conn-status .dot{ width:7px; height:7px; border-radius:50%; background:var(--teal); animation:blink 2.2s ease-in-out infinite; }
+  @keyframes blink{ 0%,100%{opacity:1;} 50%{opacity:0.25;} }
+
+  .a11y-controls{ display:flex; gap:6px; }
+  .icon-btn{
+    min-width:44px; min-height:44px;
+    display:flex; align-items:center; justify-content:center;
+    background:var(--panel-raised); border:1px solid var(--line-strong); color:var(--steel);
+    border-radius:var(--radius); cursor:pointer; font-family:var(--font-mono); font-size:0.75rem;
+    padding:0 10px;
+  }
+  .icon-btn:hover{ border-color:var(--teal); color:var(--teal); }
+  .icon-btn[aria-pressed="true"]{ background:var(--teal-dim); border-color:var(--teal); color:var(--teal); }
+
+  /* ===== Hero ===== */
+  .hero{
+    display:grid;
+    grid-template-columns: minmax(220px, 320px) 1fr;
+    gap:0;
+    border-bottom:1px solid var(--line);
+    background:
+      radial-gradient(ellipse 90% 60% at 80% -10%, rgba(0,230,193,0.06), transparent 60%),
+      var(--deep);
+  }
+
+  .depth-column-wrap{
+    position:relative;
+    border-right:1px solid var(--line);
+    padding:28px 20px 28px 24px;
+    display:flex; flex-direction:column;
+  }
+  .depth-column-wrap h2{
+    font-family:var(--font-mono); font-size:0.68rem; letter-spacing:0.12em;
+    color:var(--steel-mute); text-transform:uppercase; margin:0 0 18px;
+    font-weight:400;
+  }
+  .depth-track{
+    position:relative;
+    flex:1;
+    min-height:420px;
+    width:100%;
+    border:1px solid var(--line-strong);
+    border-radius:2px;
+    overflow:hidden;
+    background:linear-gradient(to bottom,
+      #2f6fa8 0%,
+      #1c4f82 4%,
+      #0e3763 14%,
+      #082448 30%,
+      #051730 50%,
+      #030f22 70%,
+      #020a18 85%,
+      #01050d 100%
+    );
+  }
+  .zone-band{
+    position:absolute; left:0; right:0; border-top:1px dashed var(--line-strong);
+    display:flex; align-items:flex-start; justify-content:flex-end;
+    padding:4px 8px;
+  }
+  .zone-band span{
+    font-family:var(--font-mono); font-size:0.6rem; letter-spacing:0.05em;
+    color:rgba(255,255,255,0.55); text-transform:uppercase; text-align:right;
+    background:rgba(0,0,0,0.35); padding:2px 5px; border-radius:2px;
+  }
+  .lander-marker{
+    position:absolute; left:50%; transform:translate(-50%,-50%);
+    width:22px; height:22px;
+    transition: top 0.9s linear;
+    filter:drop-shadow(0 0 6px rgba(0,230,193,0.9));
+  }
+  .lander-marker svg{ width:100%; height:100%; }
+  .lander-pulse{
+    position:absolute; left:50%; top:50%; transform:translate(-50%,-50%);
+    width:38px; height:38px; border-radius:50%;
+    border:1px solid var(--teal); opacity:0.6;
+    animation:pulse 2.4s ease-out infinite;
+  }
+  @keyframes pulse{
+    0%{ transform:translate(-50%,-50%) scale(0.4); opacity:0.7; }
+    100%{ transform:translate(-50%,-50%) scale(2.4); opacity:0; }
+  }
+  .depth-scale-caption{
+    display:flex; justify-content:space-between; margin-top:10px;
+    font-family:var(--font-mono); font-size:0.62rem; color:var(--steel-faint); letter-spacing:0.05em;
+  }
+
+  .hero-main{
+    padding:40px 40px 40px 44px;
+    display:flex; flex-direction:column; gap:28px;
+  }
+  .eyebrow{
+    font-family:var(--font-mono); font-size:0.72rem; letter-spacing:0.16em;
+    color:var(--teal); text-transform:uppercase; margin:0;
+  }
+  .hero-main h1{
+    font-family:var(--font-display); font-weight:700;
+    font-size:clamp(1.9rem, 3.6vw, 3.1rem);
+    line-height:1.06; margin:6px 0 0; color:#fff; letter-spacing:-0.01em;
+    max-width:16ch;
+  }
+  .hero-desc{
+    max-width:56ch; color:var(--steel-mute); font-size:0.98rem; margin:0;
+  }
+
+  .hud-grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fit, minmax(130px, 1fr));
+    gap:1px;
+    background:var(--line);
+    border:1px solid var(--line);
+    border-radius:var(--radius);
+    overflow:hidden;
+  }
+  .hud-cell{
+    background:var(--panel); padding:14px 16px;
+  }
+  .hud-cell .label{
+    font-family:var(--font-mono); font-size:0.62rem; letter-spacing:0.08em;
+    color:var(--steel-mute); text-transform:uppercase; margin:0 0 6px;
+  }
+  .hud-cell .value{
+    font-family:var(--font-mono); font-weight:500; font-size:1.35rem; color:var(--teal);
+    white-space:nowrap;
+  }
+  .hud-cell .unit{ font-size:0.68rem; color:var(--steel-mute); margin-left:3px; }
+  .hud-cell.state-amber .value{ color:var(--amber); }
+  .hud-cell.state-red .value{ color:var(--red); }
+
+  .mode-row{ display:flex; align-items:center; gap:14px; flex-wrap:wrap; }
+  .mode-pill{
+    font-family:var(--font-mono); font-size:0.72rem; letter-spacing:0.06em;
+    text-transform:uppercase; padding:8px 14px; border-radius:20px;
+    border:1px solid var(--line-strong); color:var(--steel-mute);
+  }
+  .mode-pill.active{ border-color:var(--teal); color:var(--teal); background:var(--teal-dim); }
+
+  .btn-row{ display:flex; gap:10px; flex-wrap:wrap; }
+  .kiosk-btn{
+    min-height:52px; min-width:130px;
+    padding:0 22px;
+    border-radius:var(--radius);
+    border:1px solid var(--line-strong);
+    background:var(--panel-raised);
+    color:var(--steel);
+    font-family:var(--font-display); font-weight:600; font-size:0.88rem;
+    letter-spacing:0.03em; text-transform:uppercase;
+    cursor:pointer;
+    display:flex; align-items:center; justify-content:center; gap:8px;
+    transition:background .12s ease, color .12s ease, border-color .12s ease, transform .06s ease;
+  }
+  .kiosk-btn:hover{ border-color:var(--teal); color:var(--teal); }
+  .kiosk-btn:active{ transform:scale(0.97); }
+  .kiosk-btn.primary{ background:var(--teal); color:#00201b; border-color:var(--teal); }
+  .kiosk-btn.primary:hover{ background:#12f2cd; color:#00201b; }
+  .kiosk-btn.danger{ color:var(--red); }
+  .kiosk-btn.danger:hover{ border-color:var(--red); }
+  .kiosk-btn:disabled{ opacity:0.35; cursor:not-allowed; }
+  .kiosk-btn:disabled:hover{ border-color:var(--line-strong); color:var(--steel); }
+
+  /* ===== Section shell ===== */
+  section.block{
+    padding:56px 40px;
+    border-bottom:1px solid var(--line);
+    max-width:1280px; margin:0 auto;
+  }
+  .block-head{ margin-bottom:28px; max-width:70ch; }
+  .block-head .eyebrow{ margin-bottom:8px; }
+  .block-head h2{
+    font-family:var(--font-display); font-weight:600; font-size:clamp(1.4rem,2.2vw,1.9rem);
+    color:#fff; margin:0 0 8px; letter-spacing:-0.01em;
+  }
+  .block-head p{ color:var(--steel-mute); margin:0; font-size:0.94rem; }
+
+  /* ===== Hull integrity grid ===== */
+  .sensor-grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fit, minmax(230px, 1fr));
+    gap:14px;
+  }
+  .sensor-card{
+    background:var(--panel); border:1px solid var(--line); border-radius:6px;
+    padding:18px 18px 16px;
+  }
+  .sensor-card .top{ display:flex; align-items:flex-start; justify-content:space-between; gap:10px; margin-bottom:14px; }
+  .sensor-card h3{
+    font-family:var(--font-display); font-weight:600; font-size:0.92rem; color:#fff; margin:0;
+  }
+  .sensor-card .zone-tag{ font-family:var(--font-mono); font-size:0.62rem; color:var(--steel-mute); letter-spacing:0.04em; text-transform:uppercase; margin-top:3px; }
+  .status-chip{
+    font-family:var(--font-mono); font-size:0.62rem; letter-spacing:0.06em; text-transform:uppercase;
+    padding:4px 9px; border-radius:12px; white-space:nowrap; flex:none;
+  }
+  .status-chip.nominal{ color:var(--teal); background:var(--teal-dim); }
+  .status-chip.watch{ color:var(--amber); background:var(--amber-dim); }
+  .status-chip.critical{ color:var(--red); background:var(--red-dim); }
+  .sensor-reading{
+    font-family:var(--font-mono); font-size:1.5rem; color:var(--steel); margin-bottom:10px;
+  }
+  .sensor-reading .u{ font-size:0.72rem; color:var(--steel-mute); margin-left:4px; }
+  .meter{ height:5px; background:var(--panel-raised); border-radius:3px; overflow:hidden; }
+  .meter i{ display:block; height:100%; background:var(--teal); border-radius:3px; transition:width .8s ease; }
+  .sensor-card p.note{ font-size:0.78rem; color:var(--steel-faint); margin:10px 0 0; }
+
+  /* ===== Sonar ===== */
+  .sonar-wrap{
+    display:grid; grid-template-columns: 320px 1fr; gap:32px; align-items:center;
+  }
+  .sonar-scope{
+    position:relative; width:100%; aspect-ratio:1/1; max-width:320px;
+    border-radius:50%; border:1px solid var(--line-strong);
+    background:radial-gradient(circle, rgba(0,230,193,0.06) 0%, var(--panel) 72%);
+    overflow:hidden;
+  }
+  .sonar-ring{ position:absolute; border:1px solid var(--line); border-radius:50%; }
+  .sonar-sweep{
+    position:absolute; inset:0; border-radius:50%;
+    background:conic-gradient(from 0deg, rgba(0,230,193,0.55), rgba(0,230,193,0) 26%);
+    animation:spin 4.5s linear infinite;
+    transform-origin:center;
+  }
+  @keyframes spin{ to{ transform:rotate(360deg); } }
+  .sonar-crosshair{ position:absolute; inset:0; }
+  .sonar-crosshair::before, .sonar-crosshair::after{
+    content:''; position:absolute; background:var(--line);
+  }
+  .sonar-crosshair::before{ left:0; right:0; top:50%; height:1px; }
+  .sonar-crosshair::after{ top:0; bottom:0; left:50%; width:1px; }
+  .ping{
+    position:absolute; width:6px; height:6px; border-radius:50%; background:var(--amber);
+    box-shadow:0 0 6px var(--amber); opacity:0; animation:ping-fade 3.2s ease-out infinite;
+  }
+  @keyframes ping-fade{ 0%{opacity:0;} 10%{opacity:1;} 100%{opacity:0;} }
+
+  .sonar-readout dl{ margin:0; display:grid; grid-template-columns:auto 1fr; gap:8px 18px; }
+  .sonar-readout dt{ font-family:var(--font-mono); font-size:0.72rem; color:var(--steel-mute); text-transform:uppercase; letter-spacing:0.04em; }
+  .sonar-readout dd{ margin:0; font-family:var(--font-mono); font-size:0.72rem; color:var(--steel); }
+  .contact-log{ margin-top:18px; border-top:1px solid var(--line); padding-top:14px; }
+  .contact-log h4{ font-family:var(--font-mono); font-size:0.66rem; letter-spacing:0.08em; color:var(--steel-mute); text-transform:uppercase; margin:0 0 8px; font-weight:400;}
+  .contact-log ul{ list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:6px; }
+  .contact-log li{ font-family:var(--font-mono); font-size:0.74rem; color:var(--steel-faint); display:flex; gap:10px; }
+  .contact-log li span.t{ color:var(--steel-mute); flex:none; }
+
+  /* ===== Mission control / log ===== */
+  .control-wrap{ display:grid; grid-template-columns:1fr 1fr; gap:28px; }
+  .terminal{
+    background:#01050a; border:1px solid var(--line); border-radius:6px;
+    padding:16px 18px; height:280px; overflow-y:auto;
+    font-family:var(--font-mono); font-size:0.78rem; color:var(--teal);
+  }
+  .terminal p{ margin:0 0 6px; color:var(--steel); }
+  .terminal p .ts{ color:var(--steel-faint); margin-right:8px; }
+  .terminal p.warn{ color:var(--amber); }
+  .terminal p.crit{ color:var(--red); }
+  .terminal p.ok{ color:var(--teal); }
+
+  .control-actions{ display:flex; flex-direction:column; gap:16px; }
+  .control-actions .btn-row{ }
+  .control-note{ font-size:0.84rem; color:var(--steel-mute); margin:0; }
+
+  /* ===== Accessibility panel ===== */
+  .a11y-panel{ display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:18px; }
+  .a11y-item{ background:var(--panel); border:1px solid var(--line); border-radius:6px; padding:16px 18px; }
+  .a11y-item h3{ font-family:var(--font-display); font-size:0.9rem; color:#fff; margin:0 0 6px; }
+  .a11y-item p{ font-size:0.82rem; color:var(--steel-mute); margin:0; }
+  .a11y-item .tick{ color:var(--teal); margin-right:6px; }
+
+  /* ===== Footer ===== */
+  footer{
+    padding:32px 40px 40px; display:flex; justify-content:space-between; gap:20px;
+    flex-wrap:wrap; align-items:flex-end;
+  }
+  footer .fbrand{ font-family:var(--font-mono); font-size:0.68rem; letter-spacing:0.08em; color:var(--steel-faint); text-transform:uppercase; }
+  footer .fmeta{ font-family:var(--font-mono); font-size:0.68rem; color:var(--steel-faint); text-align:right; }
+
+  @media (prefers-reduced-motion: reduce){
+    .sonar-sweep, .lander-pulse, .ping, .conn-status .dot{ animation:none !important; }
+    .lander-marker{ transition:none !important; }
+  }
+
+  @media (max-width: 920px){
+    .hero{ grid-template-columns:1fr; }
+    .depth-column-wrap{ border-right:none; border-bottom:1px solid var(--line); padding:24px; }
+    .depth-track{ min-height:260px; }
+    .hero-main{ padding:32px 24px; }
+    section.block{ padding:44px 22px; }
+    .sonar-wrap{ grid-template-columns:1fr; }
+    .control-wrap{ grid-template-columns:1fr; }
+  }
+  @media (max-width: 560px){
+    .topbar{ padding:12px 16px; }
+    .hud-grid{ grid-template-columns:repeat(2,1fr); }
+    .kiosk-btn{ flex:1 1 45%; min-width:0; }
+  }
+
+  /* ===== Analytics + emergency alert ===== */
+  canvas{width:100%;height:240px;display:block;background:#071019;border:1px solid var(--line);border-radius:4px;}
+  .emergency-overlay{
+    position:fixed;inset:0;z-index:200;display:none;align-items:center;justify-content:center;
+    padding:20px;background:rgba(0,0,0,.82);backdrop-filter:blur(6px);
+  }
+  .emergency-overlay.show{display:flex;}
+  .emergency-modal{
+    width:min(560px,100%);background:#12080a;border:1px solid var(--red);
+    box-shadow:0 0 60px rgba(255,74,82,.22);padding:30px;border-radius:6px;
+    animation:criticalPulse 1.4s ease-in-out infinite alternate;
+  }
+  @keyframes criticalPulse{from{box-shadow:0 0 25px rgba(255,74,82,.15)}to{box-shadow:0 0 65px rgba(255,74,82,.38)}}
+  .emergency-icon{
+    width:48px;height:48px;border-radius:50%;display:flex;align-items:center;justify-content:center;
+    background:var(--red);color:#160003;font:bold 1.5rem var(--font-mono);margin-bottom:18px;
+  }
+  .emergency-modal h2{font:700 1.8rem var(--font-display);color:#fff;margin:5px 0 10px;}
+  .emergency-modal>p:not(.eyebrow){color:#c99b9e;margin:0 0 20px;}
+  .emergency-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--line);margin-bottom:22px;}
+  .emergency-stats div{background:#1b0d10;padding:14px;}
+  .emergency-stats span{display:block;color:#997a7e;font:.62rem var(--font-mono);text-transform:uppercase;}
+  .emergency-stats strong{display:block;color:var(--red);font:1.25rem var(--font-mono);margin-top:5px;}
+  @media(max-width:560px){.emergency-stats{grid-template-columns:1fr}.emergency-modal{padding:22px}}
+
+  /* ===== Page navigation (SPA) ===== */
+  .page-nav{
+    position:sticky; top:57px; z-index:40;
+    display:flex; gap:2px; overflow-x:auto;
+    padding:0 24px; background:rgba(8,16,25,0.92); backdrop-filter:blur(10px);
+    border-bottom:1px solid var(--line);
+    -ms-overflow-style:none; scrollbar-width:none;
+  }
+  .page-nav::-webkit-scrollbar{ display:none; }
+  .nav-btn{
+    flex:none; appearance:none; border:none; background:transparent; cursor:pointer;
+    color:var(--steel-mute); font-family:var(--font-mono); font-size:0.72rem;
+    letter-spacing:0.04em; text-transform:uppercase; padding:13px 16px;
+    border-bottom:2px solid transparent; transition:color .15s ease, border-color .15s ease;
+    white-space:nowrap;
+  }
+  .nav-btn:hover{ color:var(--steel); }
+  .nav-btn.active{ color:var(--teal); border-bottom-color:var(--teal); }
+  .nav-btn:focus-visible{ outline:2px solid var(--teal); outline-offset:-2px; }
+
+  .page{
+    display:none;
+    opacity:0;
+    transform:translateY(10px);
+    transition:opacity .28s ease, transform .28s ease;
+  }
+  .page.active{ display:block; }
+  .page.page-visible{ opacity:1; transform:translateY(0); }
+  @media (prefers-reduced-motion: reduce){
+    .page{ transition:opacity .01s linear; transform:none; }
+  }
+
+</style>
+</head>
+<body>
+<a class="skip-link" href="#main">Skip to main content</a>
+
+<header class="topbar">
+  <div class="brand">
+    <span class="mark" aria-hidden="true"></span>
+    <div>
+      DEEP SEA TRENCH LANDER
+      <small>MARIANA TRENCH SUBMERSIBLE HULL MONITOR</small>
+    </div>
+  </div>
+  <div class="topbar-right">
+    <div class="conn-status">
+      <span class="dot" aria-hidden="true"></span>
+      <span id="link-status">Telemetry link stable</span>
+    </div>
+    <div class="a11y-controls" role="group" aria-label="Display settings">
+      <button class="icon-btn" id="contrastToggle" aria-pressed="false" title="Toggle high contrast">AA Contrast</button>
+      <button class="icon-btn" id="textSmaller" aria-label="Decrease text size">A-</button>
+      <button class="icon-btn" id="textLarger" aria-label="Increase text size">A+</button>
+    </div>
+  </div>
+</header>
+
+<nav class="page-nav" aria-label="Exhibit sections">
+  <button class="nav-btn" data-page="overview" type="button">Overview</button>
+  <button class="nav-btn" data-page="hull" type="button">Hull sensors</button>
+  <button class="nav-btn" data-page="sonar" type="button">Sonar</button>
+  <button class="nav-btn" data-page="analytics" type="button">Analytics</button>
+  <button class="nav-btn" data-page="control" type="button">Mission log</button>
+  <button class="nav-btn" data-page="a11y" type="button">Accessibility</button>
+</nav>
+
+<main id="main">
+
+  <section class="page" id="page-overview" aria-labelledby="overview-heading">
+  <section class="hero">
+    <div class="depth-column-wrap">
+      <h2>Live depth position</h2>
+      <div class="depth-track" id="depthTrack" role="img" aria-label="Vertical cross-section of the ocean showing the lander's current depth">
+        <div class="zone-band" style="top:0%;"><span>Sunlight — 0m</span></div>
+        <div class="zone-band" style="top:1.8%;"><span>Twilight — 200m</span></div>
+        <div class="zone-band" style="top:9.1%;"><span>Midnight — 1,000m</span></div>
+        <div class="zone-band" style="top:36.6%;"><span>Abyssal — 4,000m</span></div>
+        <div class="zone-band" style="top:54.9%;"><span>Hadal — 6,000m</span></div>
+        <div class="zone-band" style="top:100%; border-top:1px solid var(--teal);"><span style="color:#00e6c1; background:rgba(0,0,0,0.5);">Challenger Deep — 10,935m</span></div>
+        <div class="lander-pulse" id="landerPulse" style="top:0%;"></div>
+        <div class="lander-marker" id="landerMarker" style="top:0%;" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none">
+            <ellipse cx="12" cy="12" rx="10" ry="6" fill="#00e6c1"/>
+            <circle cx="12" cy="12" r="3" fill="#03070c"/>
+          </svg>
+        </div>
+      </div>
+      <div class="depth-scale-caption"><span>0 m</span><span>10,935 m</span></div>
+    </div>
+
+    <div class="hero-main">
+      <div>
+        <p class="eyebrow">Exhibit 04 — Hadal zone descent simulator</p>
+        <h1 id="overview-heading" tabindex="-1">Ride the hull monitor to the bottom of the world.</h1>
+        <p class="hero-desc">This console mirrors the instrumentation carried by a real trench-class submersible: live depth, ambient pressure, and hull-stress telemetry, updated as the lander descends toward Challenger Deep, 10,935 metres down.</p>
+      </div>
+
+      <div class="hud-grid" aria-live="polite">
+        <div class="hud-cell"><p class="label">Depth</p><p class="value" id="hudDepth">0<span class="unit">m</span></p></div>
+        <div class="hud-cell"><p class="label">Ext. pressure</p><p class="value" id="hudPressure">1.0<span class="unit">bar</span></p></div>
+        <div class="hud-cell" id="hullCell"><p class="label">Hull stress</p><p class="value" id="hudHull">2<span class="unit">%</span></p></div>
+        <div class="hud-cell"><p class="label">Ext. temp</p><p class="value" id="hudTemp">18.4<span class="unit">°C</span></p></div>
+        <div class="hud-cell" id="o2Cell"><p class="label">Life support O2</p><p class="value" id="hudO2">98<span class="unit">%</span></p></div>
+        <div class="hud-cell" id="battCell"><p class="label">Battery</p><p class="value" id="hudBatt">100<span class="unit">%</span></p></div>
+      </div>
+
+      <div class="mode-row">
+        <span class="mode-pill" id="pillDive">Diving</span>
+        <span class="mode-pill" id="pillHold">Holding</span>
+        <span class="mode-pill" id="pillAscend">Ascending</span>
+        <span class="mode-pill" id="pillDocked">Docked</span>
+      </div>
+
+      <div class="btn-row">
+        <button class="kiosk-btn primary" id="btnDive">Begin descent</button>
+        <button class="kiosk-btn" id="btnHold">Hold position</button>
+        <button class="kiosk-btn" id="btnAscend">Ascend</button>
+        <button class="kiosk-btn danger" id="btnReset">Reset to surface</button>
+      </div>
+    </div>
+  </section>
+  </section>
+
+  <section class="page" id="page-hull" aria-labelledby="hull-heading">
+  <section class="block" aria-labelledby="hull-heading">
+    <div class="block-head">
+      <p class="eyebrow">Part C — sensor array</p>
+      <h2 id="hull-heading" tabindex="-1">Hull integrity monitoring</h2>
+      <p>Strain gauges, acoustic-emission listeners, and a LiDAR scan head report structural load in real time as depth — and pressure — increase.</p>
+    </div>
+    <div class="sensor-grid" id="sensorGrid" aria-live="polite">
+      <div class="sensor-card" data-sensor="bow">
+        <div class="top"><div><h3>Bow strain gauge</h3><p class="zone-tag">Forward hull, ring 1</p></div><span class="status-chip nominal" data-chip>Nominal</span></div>
+        <p class="sensor-reading" data-reading>0.02<span class="u">mm/mm microstrain</span></p>
+        <div class="meter"><i data-meter style="width:2%"></i></div>
+      </div>
+      <div class="sensor-card" data-sensor="stern">
+        <div class="top"><div><h3>Stern strain gauge</h3><p class="zone-tag">Aft hull, ring 4</p></div><span class="status-chip nominal" data-chip>Nominal</span></div>
+        <p class="sensor-reading" data-reading>0.02<span class="u">mm/mm microstrain</span></p>
+        <div class="meter"><i data-meter style="width:2%"></i></div>
+      </div>
+      <div class="sensor-card" data-sensor="dome">
+        <div class="top"><div><h3>Viewport dome</h3><p class="zone-tag">Acrylic pressure hull</p></div><span class="status-chip nominal" data-chip>Nominal</span></div>
+        <p class="sensor-reading" data-reading>0.03<span class="u">mm/mm microstrain</span></p>
+        <div class="meter"><i data-meter style="width:3%"></i></div>
+      </div>
+      <div class="sensor-card" data-sensor="acoustic">
+        <div class="top"><div><h3>Acoustic emission</h3><p class="zone-tag">Titanium sphere seam</p></div><span class="status-chip nominal" data-chip>Nominal</span></div>
+        <p class="sensor-reading" data-reading>4<span class="u">events / min</span></p>
+        <div class="meter"><i data-meter style="width:4%"></i></div>
+      </div>
+      <div class="sensor-card" data-sensor="lidar">
+        <div class="top"><div><h3>LiDAR hull scan</h3><p class="zone-tag">Exterior surface pass</p></div><span class="status-chip nominal" data-chip>Nominal</span></div>
+        <p class="sensor-reading" data-reading>0<span class="u">deviations flagged</span></p>
+        <div class="meter"><i data-meter style="width:1%"></i></div>
+      </div>
+      <div class="sensor-card" data-sensor="thermal">
+        <div class="top"><div><h3>Thermal differential</h3><p class="zone-tag">Hull skin vs. cabin</p></div><span class="status-chip nominal" data-chip>Nominal</span></div>
+        <p class="sensor-reading" data-reading>3.2<span class="u">°C differential</span></p>
+        <div class="meter"><i data-meter style="width:8%"></i></div>
+      </div>
+    </div>
+  </section>
+  </section>
+
+  <section class="page" id="page-sonar" aria-labelledby="sonar-heading">
+  <section class="block" aria-labelledby="sonar-heading">
+    <div class="block-head">
+      <p class="eyebrow">Exterior awareness</p>
+      <h2 id="sonar-heading" tabindex="-1">Sonar &amp; exterior scan</h2>
+      <p>A 360° sweep tracks the trench floor and any nearby contacts as the lander descends through open water.</p>
+    </div>
+    <div class="sonar-wrap">
+      <div class="sonar-scope" id="sonarScope" role="img" aria-label="Rotating sonar sweep with occasional contact blips">
+        <div class="sonar-ring" style="inset:8%;"></div>
+        <div class="sonar-ring" style="inset:26%;"></div>
+        <div class="sonar-ring" style="inset:44%;"></div>
+        <div class="sonar-crosshair"></div>
+        <div class="sonar-sweep"></div>
+      </div>
+      <div class="sonar-readout">
+        <dl>
+          <dt>Contacts tracked</dt><dd id="sonarContacts">0</dd>
+          <dt>Trench floor range</dt><dd id="sonarRange">—</dd>
+          <dt>Sweep rate</dt><dd>80 rpm</dd>
+          <dt>Array status</dt><dd id="sonarStatus">Online</dd>
+        </dl>
+        <div class="contact-log">
+          <h4>Contact log</h4>
+          <ul id="contactLog">
+            <li><span class="t">00:00:00</span> Array initialised, no contacts.</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+  </section>
+
+  <section class="page" id="page-analytics" aria-labelledby="analytics-heading">
+  <section class="block" aria-labelledby="analytics-heading">
+    <div class="block-head">
+      <p class="eyebrow">Telemetry analytics</p>
+      <h2 id="analytics-heading" tabindex="-1">Pressure &amp; hull-stress history</h2>
+      <p>Live simulated trends update during descent so the operator can see how structural load changes with depth.</p>
+    </div>
+    <div class="control-wrap">
+      <div class="a11y-item">
+        <h3>Pressure vs. depth</h3>
+        <canvas id="pressureChart" height="240" aria-label="Pressure versus depth chart"></canvas>
+      </div>
+      <div class="a11y-item">
+        <h3>Hull stress vs. depth</h3>
+        <canvas id="stressChart" height="240" aria-label="Hull stress versus depth chart"></canvas>
+      </div>
+    </div>
+  </section>
+  </section>
+
+  <section class="page" id="page-control" aria-labelledby="control-heading">
+  <section class="block" aria-labelledby="control-heading">
+    <div class="block-head">
+      <p class="eyebrow">Mission control</p>
+      <h2 id="control-heading" tabindex="-1">System log &amp; commands</h2>
+      <p>Every command and depth milestone is recorded to the mission log below.</p>
+    </div>
+    <div class="control-wrap">
+      <div class="terminal" id="terminal" tabindex="0" aria-label="Mission log">
+        <p class="ok"><span class="ts">00:00:00</span> System check complete. All systems nominal.</p>
+        <p><span class="ts">00:00:01</span> Lander docked at surface platform.</p>
+      </div>
+      <div class="control-actions">
+        <div class="a11y-item">
+          <h3>How to use this console</h3>
+          <p>Press <strong>Begin descent</strong> to start the dive. <strong>Hold position</strong> freezes depth for closer sensor inspection. <strong>Ascend</strong> reverses the dive. <strong>Reset to surface</strong> returns the lander to 0 m.</p>
+        </div>
+        <div class="btn-row">
+          <button class="kiosk-btn primary" id="btnDive2">Begin descent</button>
+          <button class="kiosk-btn" id="btnHold2">Hold position</button>
+          <button class="kiosk-btn" id="btnAscend2">Ascend</button>
+        </div>
+        <p class="control-note">Simulated telemetry for exhibit purposes — figures follow real pressure and temperature curves for the Mariana Trench.</p>
+      </div>
+    </div>
+  </section>
+  </section>
+
+  <section class="page" id="page-a11y" aria-labelledby="a11y-heading">
+  <section class="block" aria-labelledby="a11y-heading">
+    <div class="block-head">
+      <p class="eyebrow">Part A — accessibility</p>
+      <h2 id="a11y-heading" tabindex="-1">Built for every visitor</h2>
+      <p>This kiosk is designed to ADA standards for public interactive exhibits.</p>
+    </div>
+    <div class="a11y-panel">
+      <div class="a11y-item"><h3><span class="tick">✓</span>Touch height</h3><p>Primary controls sit within 380–1220 mm reach range and all touch targets measure at least 44×44 px.</p></div>
+      <div class="a11y-item"><h3><span class="tick">✓</span>High contrast mode</h3><p>Toggle in the top bar swaps the palette for a black-and-white, AAA-contrast theme.</p></div>
+      <div class="a11y-item"><h3><span class="tick">✓</span>Adjustable text size</h3><p>A- and A+ controls scale all kiosk text without breaking layout.</p></div>
+      <div class="a11y-item"><h3><span class="tick">✓</span>Reduced motion aware</h3><p>Sweep, pulse, and marker animations respect the visitor's system motion preference.</p></div>
+      <div class="a11y-item"><h3><span class="tick">✓</span>Screen reader labelling</h3><p>Live telemetry regions and diagrams carry descriptive labels and polite live-region updates.</p></div>
+      <div class="a11y-item"><h3><span class="tick">✓</span>Keyboard operable</h3><p>Every control is reachable and operable by keyboard, with a visible focus ring throughout.</p></div>
+    </div>
+  </section>
+  </section>
+
+
+  <div class="emergency-overlay" id="emergencyOverlay" aria-hidden="true">
+    <div class="emergency-modal" role="alertdialog" aria-modal="true" aria-labelledby="emergencyTitle">
+      <div class="emergency-icon">!</div>
+      <p class="eyebrow">CRITICAL HULL ALERT</p>
+      <h2 id="emergencyTitle">Structural stress threshold exceeded</h2>
+      <p id="emergencyMessage">Hull stress has reached a critical level. Ascend immediately and inspect the hull.</p>
+      <div class="emergency-stats">
+        <div><span>Hull stress</span><strong id="criticalStress">86%</strong></div>
+        <div><span>Depth</span><strong id="criticalDepth">9,500 m</strong></div>
+        <div><span>Pressure</span><strong id="criticalPressure">951 bar</strong></div>
+      </div>
+      <div class="btn-row">
+        <button class="kiosk-btn danger" id="emergencyAscend">INITIATE ASCENT</button>
+        <button class="kiosk-btn" id="emergencyClose">ACKNOWLEDGE</button>
+      </div>
+    </div>
+  </div>
+
+</main>
+
+<footer>
+  <div class="fbrand">Ocean Frontiers Gallery — Deep Sea Trench Lander Exhibit</div>
+  <div class="fmeta">Exhibit 04 · Hull monitor build v1.0 · For museum kiosk display</div>
+</footer>
+
+<script>
+(function(){
+  var MAX_DEPTH = 10935;
+  var state = { depth: 0, mode: 'docked' };
+  var track = document.getElementById('depthTrack');
+  var marker = document.getElementById('landerMarker');
+  var pulse = document.getElementById('landerPulse');
+
+  var hudDepth = document.getElementById('hudDepth');
+  var hudPressure = document.getElementById('hudPressure');
+  var hudHull = document.getElementById('hudHull');
+  var hudTemp = document.getElementById('hudTemp');
+  var hudO2 = document.getElementById('hudO2');
+  var hudBatt = document.getElementById('hudBatt');
+  var hullCell = document.getElementById('hullCell');
+  var o2Cell = document.getElementById('o2Cell');
+  var battCell = document.getElementById('battCell');
+  var linkStatus = document.getElementById('link-status');
+
+  var pills = {
+    dive: document.getElementById('pillDive'),
+    hold: document.getElementById('pillHold'),
+    ascend: document.getElementById('pillAscend'),
+    docked: document.getElementById('pillDocked')
+  };
+
+  var terminal = document.getElementById('terminal');
+  var contactLog = document.getElementById('contactLog');
+  var sonarContacts = document.getElementById('sonarContacts');
+  var sonarRange = document.getElementById('sonarRange');
+  var elapsed = 0;
+
+  function fmtTime(sec){
+    var h = Math.floor(sec/3600), m = Math.floor((sec%3600)/60), s = Math.floor(sec%60);
+    function p(n){ return (n<10?'0':'')+n; }
+    return p(h)+':'+p(m)+':'+p(s);
+  }
+
+  function log(msg, cls){
+    var p = document.createElement('p');
+    if(cls) p.className = cls;
+    var ts = document.createElement('span');
+    ts.className = 'ts';
+    ts.textContent = fmtTime(elapsed);
+    p.appendChild(ts);
+    p.appendChild(document.createTextNode(msg));
+    terminal.appendChild(p);
+    terminal.scrollTop = terminal.scrollHeight;
+    while(terminal.children.length > 40){ terminal.removeChild(terminal.firstChild); }
+  }
+
+  function setMode(mode){
+    state.mode = mode;
+    Object.keys(pills).forEach(function(k){ pills[k].classList.toggle('active', k===mode); });
+    var diveBtns = [document.getElementById('btnDive'), document.getElementById('btnDive2')];
+    var holdBtns = [document.getElementById('btnHold'), document.getElementById('btnHold2')];
+    var ascendBtns = [document.getElementById('btnAscend'), document.getElementById('btnAscend2')];
+    diveBtns.forEach(function(b){ b.disabled = (mode==='dive' && state.depth>0) || state.depth>=MAX_DEPTH; });
+    ascendBtns.forEach(function(b){ b.disabled = state.depth<=0; });
+  }
+
+  var milestones = [
+    {d:200, label:'Crossing into the twilight zone — sunlight fades.'},
+    {d:1000, label:'Entering the midnight zone — no natural light remains.'},
+    {d:4000, label:'Entering the abyssal zone.'},
+    {d:6000, label:'Entering the hadal zone — trench territory begins.'},
+    {d:10935, label:'Challenger Deep reached. Maximum depth of the Mariana Trench.'}
+  ];
+  var milestoneHit = {};
+
+  function updateHUD(){
+    var depth = state.depth;
+    var pct = Math.min(100, (depth / MAX_DEPTH) * 100);
+    marker.style.top = pct + '%';
+    pulse.style.top = pct + '%';
+
+    var pressure = 1 + depth / 10;
+    var hull = Math.min(100, (depth / MAX_DEPTH) * 92 + (depth>0 ? Math.random()*1.5 : 0));
+    var temp = 18.4 - Math.min(17.2, (depth/1000) * 1.9);
+    if(depth > 1000) temp = 1.2 + Math.random()*0.6;
+    var o2 = Math.max(41, 98 - (elapsed/6));
+    var batt = Math.max(6, 100 - (elapsed/9));
+
+    hudDepth.innerHTML = Math.round(depth).toLocaleString() + '<span class="unit">m</span>';
+    hudPressure.innerHTML = pressure.toFixed(1) + '<span class="unit">bar</span>';
+    hudHull.innerHTML = hull.toFixed(0) + '<span class="unit">%</span>';
+    hudTemp.innerHTML = temp.toFixed(1) + '<span class="unit">°C</span>';
+    hudO2.innerHTML = o2.toFixed(0) + '<span class="unit">%</span>';
+    hudBatt.innerHTML = batt.toFixed(0) + '<span class="unit">%</span>';
+
+    hullCell.className = 'hud-cell' + (hull>85?' state-red':hull>60?' state-amber':'');
+    o2Cell.className = 'hud-cell' + (o2<55?' state-red':o2<70?' state-amber':'');
+    battCell.className = 'hud-cell' + (batt<20?' state-red':batt<40?' state-amber':'');
+
+    sonarRange.textContent = Math.max(0, Math.round(MAX_DEPTH - depth)).toLocaleString() + ' m to trench floor';
+
+    milestones.forEach(function(m){
+      if(depth >= m.d && !milestoneHit[m.d]){
+        milestoneHit[m.d] = true;
+        log(m.label, m.d===10935 ? 'ok' : 'warn');
+      }
+    });
+
+    updateSensors(depth);
+  }
+
+  function updateSensors(depth){
+    var frac = depth / MAX_DEPTH;
+    var cards = document.querySelectorAll('.sensor-card');
+    cards.forEach(function(card){
+      var reading = card.querySelector('[data-reading]');
+      var meter = card.querySelector('[data-meter]');
+      var chip = card.querySelector('[data-chip]');
+      var kind = card.getAttribute('data-sensor');
+      var val, pct, unit;
+      if(kind==='bow' || kind==='stern' || kind==='dome'){
+        val = (0.02 + frac * (kind==='dome'?0.7:0.55) + Math.random()*0.02).toFixed(2);
+        pct = Math.min(100, frac*70 + parseFloat(val)*8);
+        unit = 'mm/mm microstrain';
+      } else if(kind==='acoustic'){
+        val = Math.round(4 + frac*46 + Math.random()*4);
+        pct = Math.min(100, frac*80 + val*0.3);
+        unit = 'events / min';
+      } else if(kind==='lidar'){
+        val = frac>0.9 ? Math.round(Math.random()*2) : 0;
+        pct = Math.min(100, frac*20);
+        unit = 'deviations flagged';
+      } else {
+        val = (3.2 + frac*9 + Math.random()*0.5).toFixed(1);
+        pct = Math.min(100, frac*60);
+        unit = '°C differential';
+      }
+      reading.innerHTML = val + '<span class="u">' + unit + '</span>';
+      meter.style.width = pct + '%';
+      var status = pct>82 ? 'critical' : pct>55 ? 'watch' : 'nominal';
+      chip.className = 'status-chip ' + status;
+      chip.textContent = status === 'critical' ? 'Critical' : status === 'watch' ? 'Watch' : 'Nominal';
+      meter.style.background = status==='critical' ? 'var(--red)' : status==='watch' ? 'var(--amber)' : 'var(--teal)';
+    });
+  }
+
+  function tick(){
+    elapsed += 1;
+    if(state.mode === 'dive'){
+      state.depth = Math.min(MAX_DEPTH, state.depth + 55);
+    } else if(state.mode === 'ascend'){
+      state.depth = Math.max(0, state.depth - 65);
+      if(state.depth === 0) setMode('docked');
+    }
+    updateHUD();
+    setMode(state.mode);
+  }
+
+  function begin(){
+    if(state.depth >= MAX_DEPTH) return;
+    setMode('dive');
+    log('Descent initiated by operator command.', 'ok');
+  }
+  function hold(){
+    if(state.mode==='docked' && state.depth===0) return;
+    setMode('hold');
+    log('Position held at ' + Math.round(state.depth).toLocaleString() + ' m.');
+  }
+  function ascend(){
+    if(state.depth<=0) return;
+    setMode('ascend');
+    log('Ascent initiated by operator command.', 'warn');
+  }
+  function reset(){
+    state.depth = 0;
+    elapsed = 0;
+    milestoneHit = {};
+    pressureHistory = []; stressHistory = [];
+    setMode('docked');
+    updateHUD();
+    log('System reset. Lander returned to surface platform.', 'ok');
+  }
+
+  [document.getElementById('btnDive'), document.getElementById('btnDive2')].forEach(function(b){ b.addEventListener('click', begin); });
+  [document.getElementById('btnHold'), document.getElementById('btnHold2')].forEach(function(b){ b.addEventListener('click', hold); });
+  [document.getElementById('btnAscend'), document.getElementById('btnAscend2')].forEach(function(b){ b.addEventListener('click', ascend); });
+  document.getElementById('btnReset').addEventListener('click', reset);
+
+  setInterval(tick, 900);
+  setMode('docked');
+  updateHUD();
+
+  /* Sonar contacts */
+  var scope = document.getElementById('sonarScope');
+  var contactCount = 0;
+  function spawnPing(){
+    var ping = document.createElement('div');
+    ping.className = 'ping';
+    var angle = Math.random()*Math.PI*2;
+    var r = 20 + Math.random()*70;
+    var x = 50 + Math.cos(angle)*r*0.42;
+    var y = 50 + Math.sin(angle)*r*0.42;
+    ping.style.left = x + '%';
+    ping.style.top = y + '%';
+    scope.appendChild(ping);
+    contactCount++;
+    sonarContacts.textContent = contactCount;
+    var names = ['Bioluminescent organism', 'Sediment plume', 'Rock outcrop', 'Unidentified drifting object', 'Amphipod cluster'];
+    var name = names[Math.floor(Math.random()*names.length)];
+    var li = document.createElement('li');
+    li.innerHTML = '<span class="t">' + fmtTime(elapsed) + '</span> Contact: ' + name + ' detected.';
+    contactLog.insertBefore(li, contactLog.firstChild);
+    while(contactLog.children.length > 6){ contactLog.removeChild(contactLog.lastChild); }
+    setTimeout(function(){ if(ping.parentNode) ping.parentNode.removeChild(ping); }, 3200);
+  }
+  var reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  if(!reduceMotion){ setInterval(spawnPing, 2600); }
+
+  /* Accessibility controls */
+  var contrastBtn = document.getElementById('contrastToggle');
+  contrastBtn.addEventListener('click', function(){
+    var on = document.body.classList.toggle('contrast');
+    contrastBtn.setAttribute('aria-pressed', on ? 'true' : 'false');
+  });
+  var scale = 1;
+  document.getElementById('textLarger').addEventListener('click', function(){
+    scale = Math.min(1.35, scale + 0.1);
+    document.documentElement.style.setProperty('--fs-scale', scale);
+  });
+  document.getElementById('textSmaller').addEventListener('click', function(){
+    scale = Math.max(0.85, scale - 0.1);
+    document.documentElement.style.setProperty('--fs-scale', scale);
+  });
+
+
+  /* ===== Live analytics charts ===== */
+  var pressureHistory = [];
+  var stressHistory = [];
+  var emergencyShown = false;
+  var pressureCanvas = document.getElementById('pressureChart');
+  var stressCanvas = document.getElementById('stressChart');
+
+  function drawChart(canvas, data, maxY, label){
+    if(!canvas) return;
+    var ctx = canvas.getContext('2d');
+    var w = canvas.clientWidth || 500, h = 240, dpr = window.devicePixelRatio || 1;
+    canvas.width = w*dpr; canvas.height = h*dpr; ctx.setTransform(dpr,0,0,dpr,0,0);
+    ctx.clearRect(0,0,w,h);
+    ctx.strokeStyle = getComputedStyle(document.documentElement).getPropertyValue('--line-strong');
+    ctx.lineWidth=1;
+    for(var i=0;i<5;i++){var y=20+i*(h-45)/4;ctx.beginPath();ctx.moveTo(42,y);ctx.lineTo(w-12,y);ctx.stroke();}
+    ctx.fillStyle=getComputedStyle(document.documentElement).getPropertyValue('--steel-mute');
+    ctx.font='10px JetBrains Mono, monospace';
+    for(var j=0;j<5;j++){var val=Math.round(maxY-(maxY*j/4));var yy=23+j*(h-45)/4;ctx.fillText(val,6,yy);}
+    if(data.length<2) return;
+    var maxX=Math.max(1,data.length-1);
+    var color=getComputedStyle(document.documentElement).getPropertyValue('--teal').trim() || '#00e6c1';
+    ctx.strokeStyle=color;ctx.lineWidth=2.5;ctx.beginPath();
+    data.forEach(function(v,i){
+      var x=42+(i/maxX)*(w-54), y=20+(1-Math.min(v,maxY)/maxY)*(h-45);
+      if(i===0)ctx.moveTo(x,y);else ctx.lineTo(x,y);
+    });ctx.stroke();
+    ctx.fillStyle=color;ctx.fillText(label,w-125,18);
+  }
+
+  function updateCharts(depth){
+    var pressure=1+depth/10;
+    var stress=Math.min(100,(depth/MAX_DEPTH)*92);
+    pressureHistory.push(pressure); stressHistory.push(stress);
+    if(pressureHistory.length>80){pressureHistory.shift();stressHistory.shift();}
+    drawChart(pressureCanvas,pressureHistory,1100,'bar');
+    drawChart(stressCanvas,stressHistory,100,'%');
+  }
+
+  function showEmergency(depth,hull){
+    var overlay=document.getElementById('emergencyOverlay');
+    if(!overlay) return;
+    document.getElementById('criticalStress').textContent=hull.toFixed(0)+'%';
+    document.getElementById('criticalDepth').textContent=Math.round(depth).toLocaleString()+' m';
+    document.getElementById('criticalPressure').textContent=(1+depth/10).toFixed(0)+' bar';
+    overlay.classList.add('show'); overlay.setAttribute('aria-hidden','false');
+    emergencyShown=true;
+    log('CRITICAL: Hull stress threshold exceeded. Emergency ascent recommended.','crit');
+    setMode('hold');
+  }
+
+  document.getElementById('emergencyClose').addEventListener('click',function(){
+    document.getElementById('emergencyOverlay').classList.remove('show');
+    document.getElementById('emergencyOverlay').setAttribute('aria-hidden','true');
+    emergencyShown=false;
+  });
+  document.getElementById('emergencyAscend').addEventListener('click',function(){
+    document.getElementById('emergencyOverlay').classList.remove('show');
+    document.getElementById('emergencyOverlay').setAttribute('aria-hidden','true');
+    emergencyShown=false; ascend();
+  });
+
+  var originalUpdateHUD=updateHUD;
+  updateHUD=function(){
+    originalUpdateHUD();
+    var depth=state.depth, hull=Math.min(100,(depth/MAX_DEPTH)*92);
+    updateCharts(depth);
+    if(hull>=86 && !emergencyShown && state.mode==='dive') showEmergency(depth,hull);
+  };
+
+  window.addEventListener('resize',function(){
+    drawChart(pressureCanvas,pressureHistory,1100,'bar');
+    drawChart(stressCanvas,stressHistory,100,'%');
+  });
+
+  /* Occasional connection flicker for realism */
+  var linkMessages = ['Telemetry link stable', 'Acoustic modem syncing…', 'Telemetry link stable'];
+  setInterval(function(){
+    linkStatus.textContent = linkMessages[Math.floor(Math.random()*linkMessages.length)];
+  }, 6000);
+
+  /* ===== SPA page navigation ===== */
+  var navBtns = Array.prototype.slice.call(document.querySelectorAll('.nav-btn'));
+  var pages = Array.prototype.slice.call(document.querySelectorAll('.page'));
+  var reduceMotionNav = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var currentPageId = null;
+  var fadeTimer = null;
+
+  function pageIdFromHash(){
+    var h = (location.hash || '').replace('#', '');
+    return h && document.getElementById('page-' + h) ? h : 'overview';
+  }
+
+  function goToPage(id, opts){
+    opts = opts || {};
+    if(!document.getElementById('page-' + id)) id = 'overview';
+    if(id === currentPageId && !opts.force) return;
+    var next = document.getElementById('page-' + id);
+
+    navBtns.forEach(function(b){
+      var active = b.getAttribute('data-page') === id;
+      b.classList.toggle('active', active);
+      b.setAttribute('aria-current', active ? 'page' : 'false');
+    });
+
+    if(fadeTimer) clearTimeout(fadeTimer);
+
+    pages.forEach(function(p){
+      if(p !== next){
+        p.classList.remove('active', 'page-visible');
+      }
+    });
+
+    next.classList.add('active');
+    // force reflow so the transition runs even if it was just re-shown
+    void next.offsetWidth;
+    next.classList.add('page-visible');
+
+    currentPageId = id;
+    if(location.hash.replace('#','') !== id){
+      history.replaceState(null, '', '#' + id);
+    }
+
+    // Charts and sonar canvas need a redraw once their container is visible again
+    if(id === 'analytics'){
+      drawChart(pressureCanvas, pressureHistory, 1100, 'bar');
+      drawChart(stressCanvas, stressHistory, 100, '%');
+    }
+
+    // Move focus to the page heading for screen reader / keyboard users,
+    // but skip on initial load so focus doesn't jump away from the top of the document.
+    if(!opts.initial){
+      var heading = next.querySelector('h1[tabindex], h2[tabindex]');
+      if(heading) heading.focus({ preventScroll: true });
+    }
+    window.scrollTo({ top: 0, behavior: reduceMotionNav ? 'auto' : 'smooth' });
+  }
+
+  navBtns.forEach(function(b){
+    b.addEventListener('click', function(){
+      goToPage(b.getAttribute('data-page'));
+    });
+  });
+
+  window.addEventListener('popstate', function(){
+    goToPage(pageIdFromHash());
+  });
+
+  goToPage(pageIdFromHash(), { initial: true });
+})();
+</script>
+</body>
+</html>
