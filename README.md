@@ -28,7 +28,7 @@ Mariana Trench Submersible Hull Monitor — interactive museum kiosk prototype.
 - index.html — interface structure
 - css/style.css — visual design, responsive layout and animations
 - js/app.js — telemetry simulation, navigation, sonar, analytics, mission controls and accessibility behavior
-- 
+
 ## Technology:
 The project is made using HTML, CSS, and JavaScript. Everything is contained in a single HTML file, so no framework, installation, or build process is required.
 
