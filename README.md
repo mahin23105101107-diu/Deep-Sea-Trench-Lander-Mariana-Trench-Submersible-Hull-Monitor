@@ -34,5 +34,3 @@ The project is made using HTML, CSS, and JavaScript. Everything is contained in 
 
 ## How to Run:
 Simply open the HTML file in a modern web browser. It can also be hosted on any static web server.
-
-#### Note: The sensor readings are simulated for educational and exhibition purposes. They are designed to represent realistic deep-sea conditions but are not real sensor data.
