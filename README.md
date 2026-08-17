@@ -15,7 +15,7 @@ Ascend: Moves the submarine back toward the surface.
 Reset to Surface: Returns everything to the starting point.
 
 # Deep Sea Trench Lander
-Mariana Trench Submersible Hull Monitor — interactive museum kiosk prototype.
+Mariana Trench Submersible Hull Monitor - interactive museum kiosk prototype.
 
 ## Technologies
 - HTML5
@@ -23,14 +23,12 @@ Mariana Trench Submersible Hull Monitor — interactive museum kiosk prototype.
 - JavaScript
 - SVG
 - Canvas API
+Everything is contained in a single HTML file, so no framework, installation, or build process is required.
 
 ## Structure
 - index.html — interface structure
 - css/style.css — visual design, responsive layout and animations
 - js/app.js — telemetry simulation, navigation, sonar, analytics, mission controls and accessibility behavior
-
-## Technology:
-The project is made using HTML, CSS, and JavaScript. Everything is contained in a single HTML file, so no framework, installation, or build process is required.
 
 ## How to Run:
 Simply open the HTML file in a modern web browser. It can also be hosted on any static web server.
